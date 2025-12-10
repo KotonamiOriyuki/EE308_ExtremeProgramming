@@ -14,6 +14,8 @@ frontend -->
       </el-header>
       <el-main>
       <!-- Bingtian Qiao:占位，后续添加Contact List -->
+        <ContactList />
+        <!-- Bingtian Qiao:已增加 -->
       </el-main>
     </el-container>
   </div>
@@ -21,6 +23,8 @@ frontend -->
 
 <script setup>
 // Bingtian Qiao:占位
+import ContactList from './components/ContactList.vue';
+// Bingtian Qiao:已导入
 </script>
 
 <style>
