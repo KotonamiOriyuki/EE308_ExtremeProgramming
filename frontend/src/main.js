@@ -18,3 +18,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 // Bingtian Qiao: 将 Element Plus 插件挂载到应用实例
 app.use(ElementPlus)
 app.mount('#app')
+
+
+// test
