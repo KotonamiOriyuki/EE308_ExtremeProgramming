@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
-from models import ContactDetail, ContactModel
+from models import ContactDetail, ContactModel, UpdateContactModel
 import pandas as pd
 import io
 import re
@@ -51,5 +51,18 @@ async def delete_contact(id: str):
 
     if result.deleted_count == 1:
         return {"success": True}
+    
+    raise HTTPException(status_code=404, detail="Contact not found")
+
+# Yiwen Wang: 更新数据
+@app.put("/contacts/{id}", response_model=ContactModel)
+async def update_contact(id: str, contact: UpdateContactModel):
+    update_data = {k: v for k, v in contact.model_dump().items() if v is not None}
+
+    if update_data:
+        await collection.update_one({"_id": ObjectId(id)}, {"$set": update_data})
+
+    if (existing := await collection.find_one({"_id": ObjectId(id)})):
+        return existing
     
     raise HTTPException(status_code=404, detail="Contact not found")

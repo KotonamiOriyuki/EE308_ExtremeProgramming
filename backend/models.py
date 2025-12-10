@@ -22,3 +22,12 @@ class ContactModel(BaseModel):
     emails: List[ContactDetail] = []
     addresses: List[ContactDetail] = []
     socials: List[ContactDetail] = []
+
+# Yiwen Wang: 单独开一个更新的model，使用Optional让更新变成可选
+class UpdateContactModel(BaseModel):
+    name: Optional[str] = None
+    is_favorite: Optional[bool] = None
+    phones: Optional[List[ContactDetail]] = None
+    emails: Optional[List[ContactDetail]] = None
+    addresses: Optional[List[ContactDetail]] = None
+    socials: Optional[List[ContactDetail]] = None
