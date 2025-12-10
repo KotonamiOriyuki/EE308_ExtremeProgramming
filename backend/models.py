@@ -23,6 +23,11 @@ class ContactModel(BaseModel):
     addresses: List[ContactDetail] = []
     socials: List[ContactDetail] = []
 
+    # Yiwen Wang: 修改，允许别名和跳过部分验证
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
 # Yiwen Wang: 单独开一个更新的model，使用Optional让更新变成可选
 class UpdateContactModel(BaseModel):
     name: Optional[str] = None
