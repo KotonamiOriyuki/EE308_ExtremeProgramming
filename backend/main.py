@@ -97,3 +97,38 @@ async def export_contacts():
     headers = {'Content-Disposition': 'attachment; filename="contacts.xlsx"'}
     return StreamingResponse(output, headers=headers,
                              media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+# Yiwen Wang: 导入数据
+@app.post("/contacts/import")
+async def import_contacts(file: UploadFile = File(...)):
+    contents = await file.read()
+    df = pd.read_excel(io.BytesIO(contents))
+
+    contacts_to_insert = []
+    for _, row in df.iterrows():
+        def parse_cell(cell_str):
+            if pd.isna(cell_str): return []
+            items = []
+            for line in str(cell_str).split('\n'):
+                line = line.strip()
+                if not line: continue
+                # Yiwen Wang: [标签] 值，每行一个
+                match = re.match(r"^\[(.*?)\]\s*(.*)$", line)
+                if match:
+                    items.append({"label": match.group(1), "value": match.group(2)})
+                else:
+                    items.append({"label": "导入", "value": line})
+            return items
+
+        contacts_to_insert.append({
+            "name": row['姓名'],
+            "is_favorite": str(row.get('是否收藏', 'No')).lower() in ['yes', 'true', '是'],
+            "phones": parse_cell(row.get('电话')),
+            "emails": parse_cell(row.get('邮箱')),
+            "addresses": parse_cell(row.get('地址')),
+            "socials": parse_cell(row.get('社交账号'))
+        })
+
+    if contacts_to_insert:
+        await collection.insert_many(contacts_to_insert)
+    return {"message": f"Imported {len(contacts_to_insert)} contacts"}
