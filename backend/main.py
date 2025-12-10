@@ -66,3 +66,34 @@ async def update_contact(id: str, contact: UpdateContactModel):
         return existing
     
     raise HTTPException(status_code=404, detail="Contact not found")
+
+# Yiwen Wang: 数据导出
+@app.get("/contacts/export")
+async def export_contacts():
+    contacts = await collection.find().to_list(max_length)
+    data = []
+
+    for c in contacts:
+        # [Label] Value 使用换行分隔
+        def format_field(field_list):
+            return "\n".join([f"[{item['label']}] {item['value']}" for item in field_list])
+
+        data.append({
+            "姓名": c.get('name'),
+            "是否收藏": "是" if c.get('is_favorite') else "否",
+            "电话": format_field(c.get('phones', [])),
+            "邮箱": format_field(c.get('emails', [])),
+            "地址": format_field(c.get('addresses', [])),
+            "社交账号": format_field(c.get('socials', []))
+        })
+
+    df = pd.DataFrame(data)
+    output = io.BytesIO()
+
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+
+    output.seek(0)
+    headers = {'Content-Disposition': 'attachment; filename="contacts.xlsx"'}
+    return StreamingResponse(output, headers=headers,
+                             media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
